@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="weibo, social media">
+    <meta name="keywords" content="weibo, social media">
+    <meta name="author" content="ZhangXiaofeng">
+    <!-- 刷新频率及跳转链接 -->
+    <!-- <meta http-equiv="refresh" content="3;URL=https://weibo.com"> -->
+    <title>微博 - 随时随地发现新鲜事</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- 全局重置 --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5; /* 微博经典的浅灰色背景 */
+            color: #333;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* --- 登录页 --- */
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 20% 20%, #fff1e6 0, #ffffff 40%, #f0f2f5 100%);
+        }
+        .login-card {
+            width: min(420px, 92vw);
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .login-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #fa7d3c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .login-subtitle {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 18px;
+        }
+        .login-input {
+            width: 100%;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #e5e5e5;
+            padding: 0 12px;
+            margin-bottom: 12px;
+            outline: none;
+            background: #fafafa;
+        }
+        .login-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-login {
+            flex: 1;
+            height: 40px;
+            border: none;
+            border-radius: 12px;
+            background: #fa7d3c;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-login.alt {
+            background: #f0f2f5;
+            color: #333;
+        }
+        .login-tip {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        /* --- 顶部导航栏 --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-container {
+            width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fa7d3c; /* 微博橙 */
+        }
+
+        .search-box {
+            position: relative;
+        }
+        .search-box input {
+            width: 400px;
+            height: 34px;
+            border-radius: 17px;
+            border: 1px solid #ccc;
+            background: #f0f2f5;
+            padding-left: 35px;
+            outline: none;
+        }
+        .search-box i {
+            position: absolute;
+            left: 10px;
+            top: 9px;
+            color: #888;
+        }
+
+        .nav-links a {
+            margin-left: 25px;
+            font-size: 20px;
+            color: #666;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #fa7d3c; }
+
+        /* --- 主体布局 --- */
+        .main-container {
+            width: 1100px;
+            margin: 80px auto 20px; /* 避开顶部导航 */
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+
+        /* --- 左侧边栏 (导航) --- */
+        .left-sidebar {
+            width: 180px;
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+        }
+        .menu-item {
+            display: block;
+            padding: 12px 15px;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        .menu-item:hover { background-color: #e4e6eb; }
+        .menu-item.active { color: #fa7d3c; font-weight: bold; }
+        .menu-item i { margin-right: 10px; width: 20px; text-align: center; }
+
+        /* --- 中间内容区 (信息流) --- */
+        .feed-content {
+            width: 600px;
+        }
+
+        /* 发布框 */
+        .publish-box {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .publish-box textarea {
+            width: 100%;
+            height: 80px;
+            border: none;
+            resize: none;
+            font-size: 15px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .publish-tools {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f2f2f5;
+            padding-top: 10px;
+        }
+        .tools i { color: #888; margin-right: 15px; cursor: pointer; font-size: 18px; }
+        .tools i:hover { color: #fa7d3c; }
+        .btn-publish {
+            background: #fa7d3c;
+            color: #fff;
+            border: none;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        .btn-publish:hover { opacity: 1; }
+
+        /* 微博卡片 */
+        .post-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .post-header {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 10px;
+            overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info h4 { font-size: 15px; margin-bottom: 3px; }
+        .user-info span { font-size: 12px; color: #939393; }
+        
+        /* 删除按钮样式 */
+        .btn-delete {
+            margin-left: auto; /* 自动推到最右边 */
+            color: #ccc;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-delete:hover { color: #ff3b30; }
+
+        .post-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .post-text a {
+            color: #1a73e8;
+            text-decoration: underline;
+        }
+        .post-text a:hover {
+            color: #1a73e8;
+        }
+
+        /* 评论区样式 (默认隐藏) */
+        .comment-section {
+            display: none; /* 关键：一开始看不见 */
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f2f2f5;
+        }
+        .comment-input {
+            width: 100%;
+            height: 36px;
+            border: 1px solid #ddd;
+            border-radius: 18px;
+            padding: 0 15px;
+            background: #f0f2f5;
+            outline: none;
+            font-size: 14px;
+        }
+
+        /* 评论列表样式 */
+        .comment-list {
+            margin-top: 10px;
+            padding: 0 5px;
+        }
+        .comment-item {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #333;
+        }
+        .comment-user {
+            font-weight: bold;
+            color: #eb7350;
+            margin-right: 5px;
+            white-space: nowrap;
+        }
+
+        .post-images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        .post-images img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #f0f0f0;
+        }
+
+        /* 发布框图片预览 */
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .image-preview img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #f0f0f0;
+        }
+
+        .post-footer {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #f2f2f5;
+            padding-top: 10px;
+        }
+        .action-btn {
+            flex: 1;
+            text-align: center;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .action-btn:hover { color: #fa7d3c; }
+        .action-btn i { margin-right: 5px; }
+
+        /* --- 右侧边栏 (热搜/推荐) --- */
+        .right-sidebar {
+            width: 280px;
+        }
+        .widget {
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .widget-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .btn-mini {
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 10px;
+            border: 1px solid #f2f2f5;
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-mini.primary {
+            background: #fa7d3c;
+            color: #fff;
+            border-color: #fa7d3c;
+        }
+        .widget-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f2f2f5;
+            padding-bottom: 10px;
+        }
+        .hot-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .hot-list li:hover { color: #fa7d3c; }
+        .rank {
+            width: 20px;
+            font-weight: bold;
+            margin-right: 10px;
+            color: #ff8200;
+        }
+        .hot-tag {
+            background: #ff3b30;
+            color: white;
+            font-size: 10px;
+            padding: 1px 3px;
+            border-radius: 2px;
+            margin-left: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 0. 登录页（假登录） -->
+    <section class="login-page" id="loginPage">
+        <div class="login-card">
+            <div class="login-title"><i class="fab fa-weibo"></i> Weibo Lite</div>
+            <div class="login-subtitle">轻量版演示 | 3 秒进入信息流</div>
+            <input class="login-input" id="loginName" placeholder="昵称（演示用）">
+            <input class="login-input" id="loginPwd" type="password" placeholder="密码（随便填）">
+            <div class="login-actions">
+                <button class="btn-login" onclick="fakeLogin()">进入微博</button>
+                <button class="btn-login alt" onclick="fillDemo()">一键演示</button>
+            </div>
+            <div class="login-tip">* 纯前端 mock 数据，无需真实账号</div>
+        </div>
+    </section>
+
+    <!-- 1. 顶部导航 -->
+    <nav class="navbar" id="topNav" style="display:none;">
+        <div class="nav-container">
+            <div class="logo"><i class="fab fa-weibo"></i> Weibo</div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="搜索微博">
+            </div>
+            <div class="nav-links">
+                <a href="#"><i class="fas fa-home"></i></a> <!-- 首页 -->
+                <a href="#"><i class="fas fa-video"></i></a> <!-- 视频 -->
+                <a href="#"><i class="fas fa-envelope"></i></a> <!-- 消息 -->
+                <a href="#"><i class="fas fa-user"></i></a> <!-- 个人中心 -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- 2. 主体内容 -->
+    <div class="main-container" id="mainApp" style="display:none;">
+        
+        <!-- 左侧菜单 -->
+        <div class="left-sidebar">
+            <a href="#" class="menu-item active"><i class="fas fa-home"></i> 热门微博</a>
+            <a href="#" class="menu-item"><i class="fas fa-fire"></i> 热门话题</a>
+            <a href="#" class="menu-item"><i class="fas fa-user-friends"></i> 特别关注</a>
+            <a href="#" class="menu-item"><i class="fas fa-star"></i> 收藏</a>
+            <a href="#" class="menu-item"><i class="fas fa-thumbs-up"></i> 赞过</a>
+        </div>
+
+        <!-- 中间信息流 -->
+        <div class="feed-content">
+            
+            <!-- 发布框 -->
+            <div class="publish-box">
+                <textarea id="tweetInput" placeholder="有什么新鲜事想告诉大家？"></textarea>
+                <input id="imageInput" type="file" accept="image/*" multiple style="display:none;" onchange="handleImageSelect(event)">
+                <div id="imagePreview" class="image-preview" style="display:none;"></div>
+                <div class="publish-tools">
+                    <div class="tools">
+                        <i class="far fa-image" onclick="document.getElementById('imageInput').click()"></i>
+                        <i class="fas fa-at"></i>
+                        <i class="far fa-smile"></i>
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <button class="btn-publish" onclick="publishTweet()">发布</button>
+                </div>
+            </div>
+
+            <!-- 动态列表容器 -->
+            <div id="postList">
+                <!-- 这里的内容将由 JS 动态生成，不再写死 -->
+            </div>
+
+        </div>
+
+        <!-- 右侧热搜 -->
+        <div class="right-sidebar">
+            
+            <!-- 用户卡片 -->
+            <div class="widget">
+                <div class="post-header">
+                    <div class="avatar" style="width:60px;height:60px;">
+                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MyUser" alt="avatar">
+                    </div>
+                    <div class="user-info" style="margin-top:5px;">
+                        <h4 id="profileName">我的昵称</h4>
+                        <span>简介：这是一段个人简介...</span>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-around; margin-top:15px; text-align:center;">
+                    <div><strong>123</strong><br><span style="font-size:12px;color:#999">关注</span></div>
+                    <div><strong>456</strong><br><span style="font-size:12px;color:#999">粉丝</span></div>
+                    <div><strong>789</strong><br><span style="font-size:12px;color:#999">微博</span></div>
+                </div>
+            </div>
+
+            <!-- 微博热搜 -->
+            <div class="widget">
+                <div class="widget-title">微博热搜</div>
+                <ul class="hot-list" id="hotList">
+                    <li><span class="rank">1</span> 国产大模型突破 <span class="hot-tag">热</span></li>
+                    <li><span class="rank">2</span> 周末去哪儿玩</li>
+                    <li><span class="rank">3</span> 年度总结分享 <span class="hot-tag" style="background:#ff9400">新</span></li>
+                    <li><span class="rank">4</span> 如何评价新出的手机</li>
+                    <li><span class="rank">5</span> 简单的家常菜教程</li>
+                    <li><span class="rank">6</span> 职场生存法则</li>
+                </ul>
+                <div class="widget-actions">
+                    <button class="btn-mini primary" onclick="mockMcpHot()">MCP 拉取热搜</button>
+                    <button class="btn-mini" onclick="skillGeneratePost()">Skill 生成文案</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
